@@ -1,0 +1,58 @@
+{
+  "name": "wordsmith",
+  "version": "1.0.0",
+  "description": "Wordsmith - Voice-first writing app for everyone",
+  "main": "main.js",
+  "author": "Wordsmith",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "electron": "^latest",
+    "electron-builder": "^latest"
+  },
+  "build": {
+    "appId": "com.wordsmith.app",
+    "productName": "Wordsmith",
+    "files": [
+      "main.js",
+      "preload.js",
+      "Wordsmith.html",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "certificateFile": null,
+      "certificatePassword": null,
+      "signingHashAlgorithms": [
+        "sha256"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Wordsmith"
+    },
+    "portable": {
+      "artifactName": "Wordsmith-${version}.exe"
+    }
+  }
+}

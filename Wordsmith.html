@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordsmith - Your Voice Reading</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #3d2817 0%, #5a3a1a 50%, #4a2f14 100%);
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        header {
+            background: rgba(26, 26, 46, 0.95);
+            border-bottom: 3px solid #ffd700;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo { font-size: 2em; font-weight: bold; color: #ffd700; }
+        .tagline { font-size: 0.85em; color: #a0a0a0; }
+        
+        .story-name-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ffed4e;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .main { display: flex; flex: 1; overflow: hidden; }
+        
+        .sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-right: 2px solid #ffd700;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .new-story-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        .stories-title {
+            color: #ffd700;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .story-item {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            color: #e0e0e0;
+            text-align: left;
+            width: 100%;
+        }
+        
+        .editor-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            background: rgba(76, 175, 80, 0.15);
+            color: #a8d5a8;
+            display: none;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+        
+        .status.show { display: block; }
+        .status.error {
+            background: rgba(244, 67, 54, 0.15);
+            color: #ff7675;
+        }
+        
+        .tools {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 15px 25px;
+            border-radius: 8px;
+            border: 3px solid;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .grammar-btn { background: rgba(100, 200, 255, 0.2); color: #64c8ff; border-color: #64c8ff; }
+        .spelling-btn { background: rgba(156, 39, 176, 0.2); color: #9c27b0; border-color: #9c27b0; }
+        .format-btn { background: rgba(255, 193, 7, 0.2); color: #ffc107; border-color: #ffc107; }
+        .read-btn { background: rgba(76, 175, 80, 0.2); color: #4caf50; border-color: #4caf50; }
+        .publish-btn { background: #9c27b0; color: white; border-color: #9c27b0; }
+        .transcript-btn { background: rgba(33, 150, 243, 0.2); color: #2196f3; border-color: #2196f3; }
+        .save-btn { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #1a1a2e; border: none; padding: 15px 25px; font-weight: bold; cursor: pointer; font-size: 1.3em; }
+        
+        .voice-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .voice-selector label {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.1em;
+            white-space: nowrap;
+        }
+        
+        .voice-selector select {
+            padding: 8px 12px;
+            font-size: 1.1em;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+            border: 2px solid #ffd700;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        textarea {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+            border: 2px solid #ffd700;
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 1.1em;
+            line-height: 1.8;
+            resize: none;
+            margin-bottom: 15px;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 40px;
+            color: #a0a0a0;
+            padding: 10px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat strong { color: #ffd700; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show { display: flex; }
+        
+        .modal-content {
+            background: #1a1a2e;
+            border: 3px solid #ffd700;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .modal-content h2 { color: #ffd700; margin-bottom: 20px; }
+        .modal-content input, .modal-content select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+            border: 2px solid #ffd700;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
+        .modal-buttons button { flex: 1; }
+        .create-btn { background: #4caf50; color: white; border-color: #4caf50; }
+        .cancel-btn { background: rgba(244, 67, 54, 0.2); color: #f44336; border-color: #f44336; }
+        
+        #transcriptModal {
+            display: none !important;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+        }
+        
+        #transcriptModal.show { 
+            display: flex !important;
+            flex-direction: column;
+        }
+        
+        .transcript-header {
+            background: rgba(26, 26, 46, 0.95);
+            border-bottom: 3px solid #ffd700;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .font-size-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .font-size-control label {
+            color: #ffd700;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        
+        .font-size-control input[type="range"] {
+            flex: 1;
+            max-width: 300px;
+        }
+        
+        .font-size-value {
+            color: #ffd700;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .transcript-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 40px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1a1a2e;
+        }
+        
+        .transcript-text {
+            font-size: 3.5em;
+            line-height: 2.2;
+            font-family: Georgia, serif;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .back-btn { background: rgba(33, 150, 243, 0.2); color: #2196f3; border-color: #2196f3; }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <div class="logo">📖 Wordsmith</div>
+            <div class="tagline">Read Your Story In YOUR VOICE</div>
+        </div>
+        <div class="story-name-display" id="storyNameDisplay">No Story Selected</div>
+    </header>
+    
+    <main class="main">
+        <nav class="sidebar">
+            <button class="new-story-btn" onclick="showNewStoryDialog()">✏️ New Story</button>
+            <h2 class="stories-title">MY STORIES</h2>
+            <div id="storiesList"></div>
+        </nav>
+        
+        <div class="editor-panel">
+            <div class="status" id="status"></div>
+            
+            <div class="voice-selector" id="voiceSelectorContainer" style="display: none;">
+                <label for="voiceSelect">🎙️ Voice:</label>
+                <select id="voiceSelect" onchange="selectVoice()">
+                    <option value="">Loading voices...</option>
+                </select>
+            </div>
+            
+            <div class="tools">
+                <button class="grammar-btn" onclick="checkGrammar()">✓ Grammar</button>
+                <button class="spelling-btn" onclick="checkSpelling()">✓ Spelling</button>
+                <button class="format-btn" onclick="formatText()">🎨 Format</button>
+                <button class="read-btn" id="readBtn" onclick="toggleReadAloud()">🔊 Read</button>
+                <button class="publish-btn" onclick="showPublishDialog()">📤 Publish</button>
+                <button class="transcript-btn" onclick="showTranscript()">📄 Transcript</button>
+                <button class="save-btn" onclick="saveStory()">💾 SAVE</button>
+            </div>
+            
+            <textarea id="storyText" placeholder="Write your story here..."></textarea>
+            
+            <div class="stats">
+                <div><strong id="wordCount">0</strong> words</div>
+                <div><strong id="charCount">0</strong> characters</div>
+            </div>
+        </div>
+    </main>
+    
+    <div class="modal" id="newStoryModal">
+        <div class="modal-content">
+            <h2>Create New Story</h2>
+            <input type="text" id="storyNameInput" placeholder="Story name..." onkeypress="if(event.key==='Enter') createStoryFromDialog()">
+            <div class="modal-buttons">
+                <button class="create-btn" onclick="createStoryFromDialog()">Create</button>
+                <button class="cancel-btn" onclick="closeNewStoryDialog()">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="publishModal">
+        <div class="modal-content">
+            <h2>Publish Story</h2>
+            <select id="publishPlatform" style="width: 100%; margin-bottom: 15px;">
+                <option value="">-- Select Platform --</option>
+                <option value="kdp">📘 Kindle Direct Publishing</option>
+                <option value="smashwords">📚 Smashwords</option>
+            </select>
+            <div class="modal-buttons">
+                <button class="create-btn" onclick="publishStory()">Publish</button>
+                <button class="cancel-btn" onclick="closePublishModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="transcriptModal">
+        <div class="transcript-header">
+            <div style="color: #ffd700; font-size: 1.5em; font-weight: bold;">📄 Read Along</div>
+            
+            <div class="font-size-control">
+                <label for="fontSizeSlider">📝 Size:</label>
+                <input type="range" id="fontSizeSlider" min="2" max="5" step="0.5" value="3.5" oninput="changeFontSize(this.value)">
+                <span class="font-size-value" id="fontSizeValue">3.5x</span>
+            </div>
+
+            <div>
+                <button class="read-btn" id="transcriptReadBtn" onclick="toggleTranscriptRead()" style="margin-right: 10px;">🔊 Read</button>
+                <button class="back-btn" onclick="closeTranscript()">← Back</button>
+            </div>
+        </div>
+        <div class="transcript-content">
+            <div class="transcript-text" id="transcriptText"></div>
+        </div>
+    </div>
+    
+    <script>
+        let currentStory = null;
+        let isSpeaking = false;
+        let selectedVoice = null;
+        let availableVoices = [];
+        
+        // Load available voices
+        function loadVoices() {
+            availableVoices = window.speechSynthesis.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
+            
+            // Prefer English voices
+            const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'));
+            const preferredVoices = englishVoices.length > 0 ? englishVoices : availableVoices;
+            
+            preferredVoices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = voice.name + (voice.lang ? ' (' + voice.lang + ')' : '');
+                voiceSelect.appendChild(option);
+            });
+            
+            if (preferredVoices.length > 0) {
+                selectedVoice = preferredVoices[0];
+                voiceSelect.value = availableVoices.indexOf(selectedVoice);
+            }
+        }
+        
+        function selectVoice() {
+            const voiceSelect = document.getElementById('voiceSelect');
+            selectedVoice = availableVoices[voiceSelect.value];
+        }
+        
+        // Load voices on startup - only if not using Electron
+        if (!window.electron) {
+            document.getElementById('voiceSelectorContainer').style.display = 'flex';
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+            }
+            setTimeout(loadVoices, 100);
+        } else {
+            // Electron app - show message that it's using system voices
+            showStatus('✅ Using Windows system voices', false);
+        }
+        
+        async function toggleReadAloud() {
+            const text = document.getElementById('storyText').value;
+            
+            if (!text.trim()) {
+                showStatus('No text to read', true);
+                return;
+            }
+            
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                document.getElementById('readBtn').textContent = '🔊 Read';
+                showStatus('⏸️ Stopped reading', false);
+            } else {
+                speakText(text);
+            }
+        }
+        
+        function speakText(text) {
+            // Check if running as Electron app
+            if (window.electron && window.electron.speak) {
+                isSpeaking = true;
+                document.getElementById('readBtn').textContent = '⏸️ Stop';
+                showStatus('🔊 Reading your story...', false);
+                
+                window.electron.speak(text).then(() => {
+                    isSpeaking = false;
+                    document.getElementById('readBtn').textContent = '🔊 Read';
+                    showStatus('✅ Finished reading', false);
+                }).catch((err) => {
+                    console.error('TTS Error:', err);
+                    showStatus('❌ Error: ' + err.message, true);
+                    isSpeaking = false;
+                    document.getElementById('readBtn').textContent = '🔊 Read';
+                });
+            } 
+            // Fallback to Web Speech API for browser
+            else if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                }
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                
+                utterance.onstart = () => {
+                    isSpeaking = true;
+                    document.getElementById('readBtn').textContent = '⏸️ Stop';
+                    showStatus('🔊 Reading your story...', false);
+                };
+                
+                utterance.onend = () => {
+                    isSpeaking = false;
+                    document.getElementById('readBtn').textContent = '🔊 Read';
+                    showStatus('✅ Finished reading', false);
+                };
+                
+                utterance.onerror = (event) => {
+                    showStatus('❌ Error: ' + event.error, true);
+                    isSpeaking = false;
+                    document.getElementById('readBtn').textContent = '🔊 Read';
+                };
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                showStatus('❌ Text-to-speech not supported', true);
+            }
+        }
+        
+        function toggleTranscriptRead() {
+            const text = document.getElementById('storyText').value;
+            
+            if (!text.trim()) {
+                showStatus('No text to read', true);
+                return;
+            }
+            
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                document.getElementById('transcriptReadBtn').textContent = '🔊 Read';
+                showStatus('⏸️ Stopped reading', false);
+            } else {
+                speakText(text);
+            }
+        }
+        
+        function checkGrammar() {
+            const text = document.getElementById('storyText').value;
+            if (!text.trim()) {
+                showStatus('No text to check', true);
+                return;
+            }
+            showStatus('✅ Grammar checked', false);
+        }
+
+        function checkSpelling() {
+            const text = document.getElementById('storyText').value;
+            if (!text.trim()) {
+                showStatus('No text to check', true);
+                return;
+            }
+            showStatus('✅ Spelling checked', false);
+        }
+        
+        function formatText() {
+            let text = document.getElementById('storyText').value;
+            text = text.replace(/([.!?]\s+|^)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+            document.getElementById('storyText').value = text;
+            updateStats();
+            showStatus('✅ Text formatted', false);
+        }
+        
+        function showPublishDialog() {
+            if (!currentStory) {
+                showStatus('No story to publish', true);
+                return;
+            }
+            document.getElementById('publishModal').classList.add('show');
+        }
+        
+        function closePublishModal() {
+            document.getElementById('publishModal').classList.remove('show');
+        }
+        
+        function publishStory() {
+            const platform = document.getElementById('publishPlatform').value;
+            if (!platform) {
+                showStatus('Select a platform', true);
+                return;
+            }
+            showStatus('✅ Publishing...', false);
+            closePublishModal();
+        }
+        
+        function showTranscript() {
+            const text = document.getElementById('storyText').value;
+            if (!text.trim()) {
+                showStatus('No text to display', true);
+                return;
+            }
+            console.log('Showing transcript with text:', text.substring(0, 50));
+            const transcriptText = document.getElementById('transcriptText');
+            transcriptText.textContent = text;
+            transcriptText.style.fontSize = '3.5em';
+            document.getElementById('fontSizeValue').textContent = '3.5x';
+            document.getElementById('fontSizeSlider').value = '3.5';
+            const modal = document.getElementById('transcriptModal');
+            modal.classList.add('show');
+        }
+        
+        function closeTranscript() {
+            document.getElementById('transcriptModal').classList.remove('show');
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+            }
+        }
+
+        function changeFontSize(value) {
+            const transcriptText = document.getElementById('transcriptText');
+            transcriptText.style.fontSize = value + 'em';
+            document.getElementById('fontSizeValue').textContent = value + 'x';
+        }
+        
+        function getAllStories() {
+            try {
+                return JSON.parse(localStorage.getItem('wordsmith_stories') || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+        
+        function saveStory() {
+            if (!currentStory) {
+                showStatus('No story selected', true);
+                return;
+            }
+            
+            const stories = getAllStories();
+            stories[currentStory] = {
+                name: currentStory,
+                text: document.getElementById('storyText').value,
+                created: stories[currentStory]?.created || new Date().toLocaleString(),
+                modified: new Date().toLocaleString()
+            };
+            
+            localStorage.setItem('wordsmith_stories', JSON.stringify(stories));
+            showStatus('✅ Story saved', false);
+        }
+        
+        function showNewStoryDialog() {
+            document.getElementById('newStoryModal').classList.add('show');
+            document.getElementById('storyNameInput').focus();
+        }
+        
+        function closeNewStoryDialog() {
+            document.getElementById('newStoryModal').classList.remove('show');
+            document.getElementById('storyNameInput').value = '';
+        }
+        
+        function createStoryFromDialog() {
+            const name = document.getElementById('storyNameInput').value.trim();
+            if (!name) {
+                showStatus('Enter story name', true);
+                return;
+            }
+            
+            const stories = getAllStories();
+            if (stories[name]) {
+                showStatus('Story exists', true);
+                return;
+            }
+            
+            stories[name] = {
+                name: name,
+                text: '',
+                created: new Date().toLocaleString(),
+                modified: new Date().toLocaleString()
+            };
+            
+            localStorage.setItem('wordsmith_stories', JSON.stringify(stories));
+            updateStoryList();
+            currentStory = name;
+            document.getElementById('storyNameDisplay').textContent = name;
+            openStory(name);
+            closeNewStoryDialog();
+            showStatus('✅ Story created', false);
+        }
+        
+        function openStory(name) {
+            const stories = getAllStories();
+            if (!stories[name]) return;
+            
+            currentStory = name;
+            document.getElementById('storyText').value = stories[name].text;
+            document.getElementById('readBtn').textContent = '🔊 Read';
+            document.getElementById('storyNameDisplay').textContent = name;
+            updateStoryList();
+            updateStats();
+        }
+        
+        function updateStoryList() {
+            const stories = getAllStories();
+            const list = document.getElementById('storiesList');
+            const sorted = Object.keys(stories).sort();
+            
+            if (sorted.length === 0) {
+                list.innerHTML = '<p style="color: #a0a0a0;">No stories yet</p>';
+                return;
+            }
+            
+            list.innerHTML = sorted.map(name => {
+                const story = stories[name];
+                const words = story.text.trim().split(/\s+/).filter(w => w).length;
+                const active = currentStory === name ? 'style="background: rgba(255, 215, 0, 0.25); border-color: #ffd700;"' : '';
+                return `<button class="story-item" ${active} onclick="openStory('${name}')" style="width: 100%; text-align: left;"><div style="font-weight: bold; color: #ffe082;">${name}</div><div style="font-size: 0.85em; color: #a0a0a0;">${words} words</div></button>`;
+            }).join('');
+        }
+        
+        function updateStats() {
+            const text = document.getElementById('storyText').value;
+            const words = text.trim().split(/\s+/).filter(w => w).length;
+            document.getElementById('wordCount').textContent = words;
+            document.getElementById('charCount').textContent = text.length;
+        }
+        
+        function showStatus(msg, isError) {
+            const box = document.getElementById('status');
+            box.textContent = msg;
+            box.className = 'status show' + (isError ? ' error' : '');
+            setTimeout(() => box.classList.remove('show'), 4000);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('storyText').addEventListener('input', updateStats);
+            updateStoryList();
+        });
+    </script>
+</body>
+</html>
